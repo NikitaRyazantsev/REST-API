@@ -1,0 +1,4 @@
+DELETE http://localhost:8080/users/
+Content-Type: application/json
+
+{"target_id": "61d98c67c223bcf54f0a3fd3"}
