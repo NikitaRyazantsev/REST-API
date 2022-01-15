@@ -6,7 +6,6 @@ import (
 
 type Storage interface {
 	Create(ctx context.Context, user User) (string, error)
-	FindAll(ctx context.Context) (u []User, err error)
 	GetUserFriends(ctx context.Context, userID string) (friends []string, err error)
 	UpdateAge(ctx context.Context, id string, age string) error
 	Delete(ctx context.Context, id string) error

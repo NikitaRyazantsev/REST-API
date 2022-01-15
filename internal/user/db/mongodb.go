@@ -12,11 +12,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// Create database structure
 type db struct {
 	collection *mongo.Collection
 	logger     *logging.Logger
 }
 
+// NewStorage - Initialize new storage
 func NewStorage(database *mongo.Database, collection string, logger *logging.Logger) user.Storage {
 	return &db{
 		collection: database.Collection(collection),
@@ -24,15 +26,21 @@ func NewStorage(database *mongo.Database, collection string, logger *logging.Log
 	}
 }
 
+// Create - create new user in database
 func (d *db) Create(ctx context.Context, user user.User) (string, error) {
+
+	// Push user to collection
 	d.logger.Debug("create user")
 	result, err := d.collection.InsertOne(ctx, user)
 	if err != nil {
 		return "", fmt.Errorf("failed to create user due to error: %v", err)
 	}
 
+	// Get ID of new user from database
 	d.logger.Debug("convert InsertedID to ObjectID")
 	oid, ok := result.InsertedID.(primitive.ObjectID)
+
+	// Check result
 	if ok {
 		return oid.Hex(), nil
 	}
@@ -40,19 +48,7 @@ func (d *db) Create(ctx context.Context, user user.User) (string, error) {
 	return "", fmt.Errorf("failed to convert objectid to hex. probably oid: %s", oid)
 }
 
-func (d *db) FindAll(ctx context.Context) (u []user.User, err error) {
-	cursor, err := d.collection.Find(ctx, bson.M{})
-	if cursor.Err() != nil {
-		return u, fmt.Errorf("failed to find all users due to error: %v", err)
-	}
-
-	if err = cursor.All(ctx, &u); err != nil {
-		return u, fmt.Errorf("failed to read all documents from cursor. error: %v", err)
-	}
-
-	return u, nil
-}
-
+// GetUserFriends - get all friends from one user
 func (d *db) GetUserFriends(ctx context.Context, id string) ([]string, error) {
 	var u user.User
 	oid, err := primitive.ObjectIDFromHex(id)
