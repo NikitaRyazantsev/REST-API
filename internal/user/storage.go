@@ -1,5 +1,7 @@
 package user
 
+// file for data storage interface
+
 import (
 	"context"
 )

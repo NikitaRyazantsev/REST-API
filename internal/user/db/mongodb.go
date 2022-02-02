@@ -1,3 +1,4 @@
+// Package db for working with MongoDB database
 package db
 
 import (
@@ -56,8 +57,10 @@ func (d *db) GetUserFriends(ctx context.Context, id string) ([]string, error) {
 		return u.Friends, fmt.Errorf("failed to convert hex to objectid. hex: %s", id)
 	}
 
+	// filter for searching user in MongoDB
 	filter := bson.M{"_id": oid}
 
+	// find user in database
 	result := d.collection.FindOne(ctx, filter)
 	if result.Err() != nil {
 		if errors.Is(result.Err(), mongo.ErrNoDocuments) {
@@ -65,6 +68,8 @@ func (d *db) GetUserFriends(ctx context.Context, id string) ([]string, error) {
 		}
 		return u.Friends, fmt.Errorf("failed to find one user by id: %s due to error: %v", id, err)
 	}
+
+	// decoding data to go struct
 	if err = result.Decode(&u); err != nil {
 		return u.Friends, fmt.Errorf("failed to decode user (id:%s) from DB due to error: %v", id, err)
 	}
@@ -72,21 +77,28 @@ func (d *db) GetUserFriends(ctx context.Context, id string) ([]string, error) {
 	return u.Friends, nil
 }
 
+// UpdateAge - func update age of one user
 func (d *db) UpdateAge(ctx context.Context, id string, age string) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return fmt.Errorf("failed to convert user ID to ObjectID. ID=%s", id)
 	}
+
+	// filter for searching user in MongoDB
 	filter := bson.M{"_id": objectID}
+
+	// create a message for mongoDB for change age
 	updateAge := bson.D{
 		{"$set", bson.D{{"age", age}}},
 	}
 
+	// updating user in database
 	result, err := d.collection.UpdateOne(ctx, filter, updateAge)
 	if err != nil {
 		return fmt.Errorf("failed to execute update user query. error: %v", err)
 	}
 
+	// check for match
 	if result.MatchedCount == 0 {
 		return err
 	}
@@ -96,15 +108,19 @@ func (d *db) UpdateAge(ctx context.Context, id string, age string) error {
 	return nil
 }
 
+// Delete - func for delete user from database
 func (d *db) Delete(ctx context.Context, id string) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return fmt.Errorf("failed to convert user ID to ObjectID. ID=%s", id)
 	}
 
+	// filter for searching user in MongoDB
 	filter := bson.M{"_id": objectID}
 
 	var u user.User
+
+	// find user in a database
 	res := d.collection.FindOne(ctx, filter)
 	if err = res.Decode(&u); err != nil {
 		return fmt.Errorf("failed to decode user (id:%s) from DB due to error: %v", id, err)
@@ -141,19 +157,32 @@ func (d *db) MakeFriends(ctx context.Context, firstUserID string, secondUserID s
 		return firstUser, secondUser, fmt.Errorf("failed to convert user ID to ObjectID. ID=%s", secondUserID)
 	}
 
+	// filter for mongoDB for first user
 	filter := bson.M{"_id": firstObjectID}
+
+	// find first user in database
 	res := d.collection.FindOne(ctx, filter)
+
+	// decoding first user
 	if err = res.Decode(&firstUser); err != nil {
 		return firstUser, secondUser, fmt.Errorf("failed to decode user (id:%s) from DB due to error: %v", firstUserID, err)
 	}
 
+	// filter for mongoDB for second user
 	filter = bson.M{"_id": secondObjectID}
+
+	// // find second user in database
 	res = d.collection.FindOne(ctx, filter)
+
+	// decoding second user
 	if err = res.Decode(&secondUser); err != nil {
 		return firstUser, secondUser, fmt.Errorf("failed to decode user (id:%s) from DB due to error: %v", secondUserID, err)
 	}
 
+	// filter for updating first user
 	updateFilter := bson.M{"_id": firstObjectID}
+
+	// updating first user in database
 	updateResult, err := d.collection.UpdateOne(ctx, updateFilter, bson.D{
 		{"$push", bson.D{{"friends", secondUser.Username}}},
 	})
@@ -162,7 +191,10 @@ func (d *db) MakeFriends(ctx context.Context, firstUserID string, secondUserID s
 	}
 	d.logger.Tracef("Modified %d documents", updateResult.ModifiedCount)
 
+	// filter for updating second user
 	updateFilter = bson.M{"_id": secondObjectID}
+
+	// updating second user in database
 	updateResult, err = d.collection.UpdateOne(ctx, updateFilter, bson.D{
 		{"$push", bson.D{{"friends", firstUser.Username}}},
 	})

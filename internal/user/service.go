@@ -1,16 +1,20 @@
 package user
 
+// file for user-service functions
+
 import (
 	"context"
 	"fmt"
 	"project/pkg/logging"
 )
 
+// service struct with logging
 type service struct {
 	storage Storage
 	logger  logging.Logger
 }
 
+// NewService - func for initialization user-service
 func NewService(userStorage Storage, logger logging.Logger) (Service, error) {
 	return &service{
 		storage: userStorage,
@@ -18,6 +22,7 @@ func NewService(userStorage Storage, logger logging.Logger) (Service, error) {
 	}, nil
 }
 
+// Service - interface for description user-service functions
 type Service interface {
 	Create(ctx context.Context, user User) (userID string, err error)
 	GetUserFriends(ctx context.Context, userID string) (friends []string, err error)
@@ -26,6 +31,7 @@ type Service interface {
 	MakeFriends(ctx context.Context, firstUserID string, secondUserID string) (firstUser User, secondUser User, err error)
 }
 
+// Create - func for creating user
 func (s service) Create(ctx context.Context, user User) (userID string, err error) {
 	s.logger.Info("create user")
 	userID, err = s.storage.Create(ctx, user)
@@ -35,6 +41,7 @@ func (s service) Create(ctx context.Context, user User) (userID string, err erro
 	return userID, nil
 }
 
+// GetUserFriends - func for get all friends from one user
 func (s service) GetUserFriends(ctx context.Context, userID string) (friends []string, err error) {
 	friends, err = s.storage.GetUserFriends(ctx, userID)
 	if err != nil {
@@ -43,6 +50,7 @@ func (s service) GetUserFriends(ctx context.Context, userID string) (friends []s
 	return friends, nil
 }
 
+// UpdateAge - func for updating age of one user
 func (s service) UpdateAge(ctx context.Context, id string, age string) error {
 	err := s.storage.UpdateAge(ctx, id, age)
 	if err != nil {
@@ -51,6 +59,7 @@ func (s service) UpdateAge(ctx context.Context, id string, age string) error {
 	return err
 }
 
+// Delete - func for deleting one user from database
 func (s service) Delete(ctx context.Context, userID string) error {
 	err := s.storage.Delete(ctx, userID)
 	if err != nil {
@@ -59,6 +68,7 @@ func (s service) Delete(ctx context.Context, userID string) error {
 	return err
 }
 
+// MakeFriends - func that create friendship between tow user by appending users names in friends array of each user
 func (s service) MakeFriends(ctx context.Context, firstUserID string, secondUserID string) (firstUser User, secondUser User, err error) {
 	firstUser, secondUser, err = s.storage.MakeFriends(ctx, firstUserID, secondUserID)
 	if err != nil {

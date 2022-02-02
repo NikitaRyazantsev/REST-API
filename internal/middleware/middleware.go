@@ -1,3 +1,4 @@
+// Package middleware - for handlers middleware
 package middleware
 
 import (
@@ -6,8 +7,10 @@ import (
 	"runtime/debug"
 )
 
+// creating custom handler
 type appHandler func(w http.ResponseWriter, r *http.Request) error
 
+// Logging - logging middleware for handlers
 func Logging(h appHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := h(w, r)
@@ -18,6 +21,7 @@ func Logging(h appHandler) http.HandlerFunc {
 	}
 }
 
+// PanicRecovery - recovery middleware for handlers
 func PanicRecovery(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {

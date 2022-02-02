@@ -1,3 +1,4 @@
+// Package config - for working with yaml config file
 package config
 
 import (
@@ -7,6 +8,7 @@ import (
 	"time"
 )
 
+// Config structure
 type Config struct {
 	IsDebug *bool `yaml:"is_debug" env-required:"true"`
 	Listen  struct {
@@ -32,11 +34,15 @@ type Config struct {
 var instance *Config
 var once sync.Once
 
+// GetConfig - Get data from config file
 func GetConfig() *Config {
 	once.Do(func() {
+		// Logging
 		logger := logging.GetLogger()
 		logger.Info("read application configuration")
 		instance = &Config{}
+
+		// Get data from config with cleanenv
 		if err := cleanenv.ReadConfig("../../config.yml", instance); err != nil {
 			help, _ := cleanenv.GetDescription(instance, nil)
 			logger.Info(help)
