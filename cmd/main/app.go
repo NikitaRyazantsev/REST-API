@@ -2,13 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/julienschmidt/httprouter"
-	"net"
 	"net/http"
 	"os"
-	"path"
-	"path/filepath"
 	"project/internal/config"
 	"project/internal/user"
 	"project/internal/user/db"
@@ -61,36 +57,9 @@ func main() {
 func start(router *httprouter.Router, cfg *config.Config, logger *logging.Logger) {
 	logger.Info("start application")
 
-	// Create listener
-	var listener net.Listener
-	var listenErr error
-
-	// Choose type of connection
-	if cfg.Listen.Type == "sock" {
-		logger.Info("detect app path")
-		appDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-		if err != nil {
-			logger.Fatal(err)
-		}
-
-		logger.Info("create socket")
-		socketPath := path.Join(appDir, "app.sock")
-		logger.Debugf("socket path: %s", socketPath)
-
-		logger.Info("listen unix socket")
-		listener, listenErr = net.Listen("unix", socketPath)
-		logger.Info("server is listening unix socket: %s", socketPath)
-	} else {
-		logger.Info("listen tcp")
-		listener, listenErr = net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Listen.BindIP, cfg.Listen.Port))
-	}
-
-	if listenErr != nil {
-		logger.Fatal(listenErr)
-	}
-
 	// Star server
 	server := &http.Server{
+		Addr:         ":" + cfg.Listen.Port,
 		Handler:      router,
 		WriteTimeout: cfg.Timeout.Write * time.Second,
 		ReadTimeout:  cfg.Timeout.Read * time.Second,
@@ -101,6 +70,6 @@ func start(router *httprouter.Router, cfg *config.Config, logger *logging.Logger
 		server)
 
 	// Start server
-	logger.Info("server is listening port %s:%s", cfg.Listen.BindIP, cfg.Listen.Port)
-	logger.Fatalln(server.Serve(listener))
+	logger.Info("server is listening port: %s", cfg.Listen.Port)
+	logger.Fatalln(server.ListenAndServe())
 }
