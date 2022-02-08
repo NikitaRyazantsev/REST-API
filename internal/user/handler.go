@@ -62,7 +62,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("User with id:%v was created", u.ID)))
+	w.Write([]byte(fmt.Sprintf("From 1 instance: User with id:%v was created", u.ID)))
 	return nil
 
 }
@@ -86,7 +86,7 @@ func (h *Handler) GetUserFriends(w http.ResponseWriter, r *http.Request) error {
 	w.WriteHeader(http.StatusOK)
 
 	// creating message for answer
-	message := fmt.Sprintf("Друзья Пользователя c id:%s, это:%s", userID, friends)
+	message := fmt.Sprintf("From 1 instance: Друзья Пользователя c id:%s, это:%s", userID, friends)
 	w.Write([]byte(message))
 	return nil
 }
@@ -131,7 +131,7 @@ func (h *Handler) UpdateUserAge(w http.ResponseWriter, r *http.Request) error {
 	w.WriteHeader(http.StatusOK)
 
 	// create message for answer
-	message := fmt.Sprintf("Пользователь c id:%s, обновлен", userID)
+	message := fmt.Sprintf("From 1 instance: Пользователь c id:%s, обновлен", userID)
 	w.Write([]byte(message))
 	return nil
 }
@@ -173,7 +173,7 @@ func (h *Handler) MakeFriends(w http.ResponseWriter, r *http.Request) error {
 	w.WriteHeader(http.StatusOK)
 
 	// creating message for answer
-	answer := fmt.Sprintf("Пользователи %s и %s теперь друзья", firstUser.Username, secondUser.Username)
+	answer := fmt.Sprintf("From 1 instance: Пользователи %s и %s теперь друзья", firstUser.Username, secondUser.Username)
 	w.Write([]byte(answer))
 	return nil
 }
@@ -211,7 +211,7 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	w.WriteHeader(http.StatusOK)
-	text := fmt.Sprintf("Пользователь c id:%s - удален", message.TargetID)
+	text := fmt.Sprintf("From 1 instance: Пользователь c id:%s - удален", message.TargetID)
 	w.Write([]byte(text))
 
 	return nil

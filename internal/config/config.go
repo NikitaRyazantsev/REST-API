@@ -13,7 +13,7 @@ type Config struct {
 	IsDebug *bool `yaml:"is_debug" env-required:"true"`
 	Listen  struct {
 		Type   string `yaml:"type" env-default:"port"`
-		BindIP string `yaml:"bind_ip" env-default:"127.0.0.1"`
+		BindIP string `yaml:"bind_ip" env-default:"localhost"`
 		Port   string `yaml:"port" env-default:"8080"`
 	} `yaml:"listen"`
 	Timeout struct {
@@ -43,7 +43,7 @@ func GetConfig() *Config {
 		instance = &Config{}
 
 		// Get data from config with cleanenv
-		if err := cleanenv.ReadConfig("../../config.yml", instance); err != nil {
+		if err := cleanenv.ReadConfig("config.yml", instance); err != nil {
 			help, _ := cleanenv.GetDescription(instance, nil)
 			logger.Info(help)
 			logger.Fatal(err)
